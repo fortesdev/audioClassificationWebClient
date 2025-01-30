@@ -14,7 +14,7 @@
 
 import audio from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-audio@0.10.0";
 const { AudioClassifier, AudioClassifierResult, FilesetResolver } = audio;
-const demosSection = document.getElementById("demos");
+
 let isPlaying = false;
 let audioClassifier;
 let audioCtx;
@@ -25,25 +25,11 @@ const createAudioClassifier = async () => {
             modelAssetPath: "https://storage.googleapis.com/mediapipe-models/audio_classifier/yamnet/float32/1/yamnet.tflite"
         }
     });
-    demosSection.classList.remove("invisible");
+    runStreamingAudioClassification()
 };
 createAudioClassifier();
 
-function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-}
-function removeAllChildNodes(parent) {
-    while (parent.firstChild) {
-        parent.removeChild(parent.firstChild);
-    }
-}
-/*
-  Demo 2 - Streaming classification from microphone
-*/
-const streamingBt = document.getElementById("microBt");
-streamingBt.addEventListener("click", async function () {
-    await runStreamingAudioClassification();
-});
+
 async function runStreamingAudioClassification() {
     const output = document.getElementById("microResult");
     const constraints = { audio: true };
@@ -58,14 +44,9 @@ async function runStreamingAudioClassification() {
     if (!audioCtx) {
         audioCtx = new AudioContext({ sampleRate: 16000 });
     }
-    else if (audioCtx.state === "running") {
-        await audioCtx.suspend();
-        streamingBt.firstElementChild.innerHTML = "START CLASSIFYING";
-        return;
-    }
+    
     // resumes AudioContext if has been suspended
     await audioCtx.resume();
-    streamingBt.firstElementChild.innerHTML = "STOP CLASSIFYING";
     const source = audioCtx.createMediaStreamSource(stream);
     const scriptNode = audioCtx.createScriptProcessor(16384, 1, 1);
     scriptNode.onaudioprocess = function (audioProcessingEvent) {
